@@ -38,3 +38,5 @@ npm start
 5. DELETE /questions/:id: Deletes a question by its ID.
 6. POST /check-answer: Checks the submitted answers against the correct answers.
 
+## Deployment
+The application is deployed and can be accessed [here](https://quiz-app-three-phi.vercel.app).
