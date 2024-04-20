@@ -1,1 +1,51 @@
-/*  Styling will be done here */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  #questions-container {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+  }
+
+  form {
+    margin-bottom: 20px;
+  }
+
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+
+  .feedback {
+    font-style: italic;
+  }
+
+  .feedback.correct {
+    color: green;
+  }
+
+  .feedback.incorrect {
+    color: red;
+  }
+
+  #submitButton {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  #submitButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
