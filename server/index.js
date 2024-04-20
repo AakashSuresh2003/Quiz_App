@@ -2,10 +2,16 @@ const env = require("dotenv")
 env.config()
 const express = require("express");
 const cors = require("cors")
-const quizRouter = require("./router/quiz.router")
+const quizRouter = require("./router/quiz.router");
+const connectDb = require("./database/db.config");
+
 app = express();
+
 app.use(cors());
 app.use(express.json());
+
+connectDb()
+
 app.use("/api/v1",quizRouter)
 
 app.get("/", (req, res) => {
