@@ -67,21 +67,29 @@ const deleteQuestion = async (req, res) => {
 
 const checkAnswer = async (req, res) => {
   try {
-    const { _id, selectedAnswer } = req.body;
-    const question = await Quiz.findById(_id);
-    if (!question) {
-      return res.status(404).json({ error: "Question not found" });
-    }
-
-    const correctAnswer = question.correctanswer;
-    const isCorrect = selectedAnswer === correctAnswer;
-
-    res.status(200).json({ isCorrect, correctAnswer });
+    const data = req.body.data;
+    const result = await Promise.all(data.map(async (element) => {
+      try {
+        const elementData = await Quiz.findById(element._id);
+        const isCorrect = element.selectedAnswer === elementData.correctanswer;
+        return {
+          _id: elementData._id,
+          isCorrect: isCorrect,
+          correctAnswer: elementData.correctanswer, // Optionally include the correct answer in the response
+          feedback:elementData.feedback
+        };
+      } catch (err) {
+        throw err;
+      }
+    }));
+    console.log(result);
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error checking answer:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = {
   getAllQuestions,
