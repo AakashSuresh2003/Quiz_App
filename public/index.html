@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./asserts/Style/style.css" />
+    <script src="./asserts/Script/script.js"></script>
+    <title>Quiz App</title>
+  </head>
+  <body>
+    <h1>Quiz App</h1>
+    <div id="username-form">
+      <form id="usernameForm">
+        <input
+          type="text"
+          id="username-input"
+          placeholder="Enter your username"
+          required
+        />
+        <button type="submit" id="startButton">Start Quiz</button>
+      </form>
+    </div>
+    <div id="score" style="display: none">
+      <span id="username-name">Name</span>
+      Score: <span id="scoreValue">0</span>
+    </div>
+    <div id="questions-container" style="display: none"></div>
+    <button
+      id="submitButton"
+      type="button"
+      style="display: none"
+      onclick="checkAllAnswers()"
+    >
+      Submit Answers
+    </button>
+    <button
+      id="restart"
+      type="button"
+      style="display: none"
+      onclick="restart()"
+    >
+      Restart
+    </button>
+  </body>
+</html>
