@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    #username-form {
+      margin: 50px auto;
+      text-align: center;
+    }
+
+    #username-input {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    #startButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #startButton:hover {
+      background-color: #0056b3;
+    }
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  #questions-container {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+  }
+
+  form {
+    margin-bottom: 20px;
+  }
+
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+
+  .feedback {
+    font-style: italic;
+  }
+
+  .feedback.correct {
+    color: green;
+  }
+
+  .feedback.incorrect {
+    color: red;
+  }
+
+  #submitButton,#restart {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  #submitButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  #score {
+    text-align: right;
+    font-size: 20px;
+    margin-top: 20px;
+    margin-right: 10%;
+  
+  }
+  </style>
+</head>
+<body>
+  <h1>Quiz App</h1>
+  <div id="username-form">
+    <form id="usernameForm">
+      <input type="text" id="username-input" placeholder="Enter your username" required>
+      <button type="submit" id="startButton">Start Quiz</button>
+    </form>
+  </div>
+  <div id="score" style="display: none;">
+    <span id="username-name">Name</span>
+    Score: <span id="scoreValue">0</span></div>
+  <div id="questions-container" style="display: none;"></div>
+  <button id="submitButton" type="button" style="display: none;" onclick="checkAllAnswers()">
+    Submit Answers
+  </button>
+  <button id="restart" type="button" style="display: none;" onclick ="restart()">Restart</button>
+  
+
+  <script>
+    let userScore = 0;
+    const getUserName = localStorage.getItem('name')
+    if(getUserName){
+        startQuiz(getUserName)
+    }
+    document.getElementById("usernameForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const username = document.getElementById("username-input").value;
+      localStorage.setItem('name',username)
+      startQuiz(username);
+
+      
+    });
+  
+    function restart(){
+        localStorage.clear();
+        window.location.reload();
+    }
+    async function startQuiz(username) {
+      try {
+        // Hide username form and show questions container
+        document.getElementById("username-form").style.display = "none";
+        document.getElementById("questions-container").style.display = "block";
+        document.getElementById("submitButton").style.display = "block";
+        document.getElementById("score").style.display = "block";
+        document.getElementById("restart").style.display = "block";
+        document.getElementById('username-name').innerHTML = localStorage.getItem('name')
+        console.log(localStorage.getItem('name'));
+        // Fetch questions and display them
+        const response = await fetch("http://localhost:3000/api/v1/questions");
+        const data = await response.json();
+        displayQuestions(data);
+      } catch (error) {
+        console.error("Error starting quiz:", error);
+      }
+    }
+  
+    function displayQuestions(questions) {
+      const questionsContainer = document.getElementById("questions-container");
+      questionsContainer.innerHTML = "";
+  
+      questions.forEach((question) => {
+        const questionElement = document.createElement("div");
+        questionElement.innerHTML = `
+        <p>${question.question}</p>
+        <form class="question-form" id="form-${question._id}">
+          ${question.options
+            .map(
+              (option) => `
+            <input type="radio" name="${question._id}" value="${option}">
+            <label>${option}</label><br>
+          `
+            )
+            .join("")}
+          <p class="feedback" id="feedback-${question._id}"></p>
+        </form>
+      `;
+        questionsContainer.appendChild(questionElement);
+      });
+    }
+    async function checkAllAnswers() {
+  const questions = document.querySelectorAll(".question-form");
+  const answers = [];
+  let allQuestionsAnswered = true;
+  
+  questions.forEach((form) => {
+    const questionId = form.id.split("-")[1];
+    const selectedAnswer = form.querySelector(
+      `input[name="${questionId}"]:checked`
+    );
+    if (!selectedAnswer) {
+      allQuestionsAnswered = false;
+      return;
+    }
+    answers.push({
+      _id: questionId,
+      selectedAnswer: selectedAnswer.value,
+    });
+  });
+  
+  if (!allQuestionsAnswered) {
+    
+    alert("Please answer all questions before submitting.");
+    return;
+  }
+  
+  try {
+    const response = await fetch(
+      "http://localhost:3000/api/v1/check-answer",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data: answers }),
+      }
+    );
+    const results = await response.json();
+  
+    results.forEach((result) => {
+      const feedbackElement = document.getElementById(
+        `feedback-${result._id}`
+      );
+      if (result.isCorrect) {
+        feedbackElement.textContent = "Correct!";
+        feedbackElement.classList.add("correct");
+        userScore++;
+      } else {
+        feedbackElement.textContent = `Incorrect. The correct answer is: ${result.correctAnswer}`;
+        feedbackElement.textContent += `\nFeedback: ${result.feedback}`;
+        feedbackElement.classList.add("incorrect");
+      }
+    });
+    document.getElementById("submitButton").disabled = true;
+    document.getElementById("scoreValue").textContent = `${userScore}/${results.length}`;
+  } catch (error) {
+    console.error("Error checking answers:", error);
+  }
+  }
+  
+  fetchAllQuestions();
+    // Rest of the code remains the same
+  </script>
+  
+</body>
+</html>
